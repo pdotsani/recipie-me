@@ -1,15 +1,19 @@
 package org.vaadin.example;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
+import ai.peoplecode.OpenAIConversation;
 
 /**
  * A sample Vaadin view class.
@@ -27,7 +31,6 @@ import com.vaadin.flow.router.RouterLink;
 @Route("")
 @PageTitle("Main")
 public class MainView extends AppLayout {
-
     public MainView() {
         createHeader();
         createDrawer();
@@ -64,18 +67,60 @@ public class MainView extends AppLayout {
 @Route(value = "recipe", layout = MainView.class)
 @PageTitle("Recipe")
 class RecipeView extends VerticalLayout {
+    private OpenAIConversation conversation;
+    private String recipe = "";
+    private String data = "";
+
     public RecipeView() {
-        add(new H1("Search by Recipie"));
-        // Add your recipe view content here
+        conversation = new OpenAIConversation("demo", "gpt-4o-mini");
+        add(new H1("Search by Recipe"));
+        TextField askRecipe = new TextField();
+        Paragraph paragraph = new Paragraph();
+
+        askRecipe.setPlaceholder("enter a recipe here");
+        askRecipe.setWidth("75%");
+        paragraph.setWidth("75%");
+        paragraph.setHeight("auto");
+
+
+        askRecipe.addKeyPressListener(Key.ENTER, event -> {
+            recipe = askRecipe.getValue();
+            data = conversation.askQuestion("Can you show me a recipe for ", recipe);
+            paragraph.setText(data);
+        });
+
+        add(askRecipe);
+        add(paragraph);
     }
 }
 
 @Route(value = "ingredients", layout = MainView.class)
 @PageTitle("Ingredients")
 class IngredientsView extends VerticalLayout {
+    private OpenAIConversation conversation;
+    private String ingridients = "";
+    private String data = "";
+
     public IngredientsView() {
         add(new H1("Search by Ingredients"));
-        // Add your ingredients view content here
+        conversation = new OpenAIConversation("demo", "gpt-4o-mini");
+        TextField askRecipe = new TextField();
+        Paragraph paragraph = new Paragraph();
+
+        askRecipe.setPlaceholder("list some ingredients here");
+        askRecipe.setWidth("75%");
+        paragraph.setWidth("75%");
+        paragraph.setHeight("auto");
+
+
+        askRecipe.addKeyPressListener(Key.ENTER, event -> {
+            ingridients = askRecipe.getValue();
+            data = conversation.askQuestion("Can you show me a recipe with these ingredients ", ingridients);
+            paragraph.setText(data);
+        });
+
+        add(askRecipe);
+        add(paragraph);
     }
 }
 

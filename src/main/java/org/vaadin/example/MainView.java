@@ -5,6 +5,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -72,6 +73,7 @@ public class MainView extends AppLayout {
 @PageTitle("Recipe")
 class RecipeView extends VerticalLayout {
     private OpenAIConversation conversation;
+    private OpenAIImageGen imageGen;
     private String recipe = "";
     private String data = "";
     private String time = "";
@@ -79,13 +81,17 @@ class RecipeView extends VerticalLayout {
     public RecipeView() {
         String OPENAIKEY = (EnvUtils.get("OPEN_AI_KEY") != null) ? EnvUtils.get("OPEN_AI_KEY") : "demo";
         conversation = new OpenAIConversation(OPENAIKEY, "gpt-4o-mini");
+        imageGen = new OpenAIImageGen();
         add(new H1("Search by Recipe"));
         TextField askRecipe = new TextField();
         Div recipieDiv = new Div();
         Div cookingTime = new Div();
+        Image foodImage = new Image();
 
         askRecipe.setPlaceholder("enter a recipe here");
         askRecipe.setWidth("75%");
+        foodImage.setWidth("25%");
+        foodImage.setHeight("25%");
         cookingTime.setWidth("75%");
         recipieDiv.getStyle().set("min-height", "100px");
         recipieDiv.setWidth("75%");
@@ -105,11 +111,14 @@ class RecipeView extends VerticalLayout {
             Node doc = parser.parse(time);
             String html2 = renderer.render(doc);
 
+            foodImage.setSrc(imageGen.generate(recipe));
+
             recipieDiv.getElement().setProperty("innerHTML", html);
             cookingTime.getElement().setProperty("innerHTML", html2);
         });
 
         add(askRecipe);
+        add(foodImage);
         add(cookingTime);
         add(recipieDiv);
     }
@@ -119,6 +128,7 @@ class RecipeView extends VerticalLayout {
 @PageTitle("Ingredients")
 class IngredientsView extends VerticalLayout {
     private OpenAIConversation conversation;
+    private OpenAIImageGen imageGen;
     private String ingridients = "";
     private String data = "";
     private String recipe = "";
@@ -128,11 +138,15 @@ class IngredientsView extends VerticalLayout {
         String OPENAIKEY = (EnvUtils.get("OPEN_AI_KEY") != null) ? EnvUtils.get("OPEN_AI_KEY") : "demo";
         add(new H1("Search by Ingredients"));
         conversation = new OpenAIConversation(OPENAIKEY, "gpt-4o-mini");
+        imageGen = new OpenAIImageGen();
         TextField askRecipe = new TextField();
         Div recipieDiv = new Div();
         Div cookingTime = new Div();
+        Image foodImage = new Image();
 
         askRecipe.setPlaceholder("list some ingredients here");
+        foodImage.setWidth("25%");
+        foodImage.setHeight("25%");
         cookingTime.setWidth("75%");
         askRecipe.setWidth("75%");
         recipieDiv.setWidth("75%");
@@ -140,7 +154,6 @@ class IngredientsView extends VerticalLayout {
 
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder().build();
-
 
         askRecipe.addKeyPressListener(Key.ENTER, event -> {
             ingridients = askRecipe.getValue();
@@ -155,11 +168,14 @@ class IngredientsView extends VerticalLayout {
             Node doc = parser.parse(time);
             String html2 = renderer.render(doc);
 
+            foodImage.setSrc(imageGen.generate(recipe));
+
             recipieDiv.getElement().setProperty("innerHTML", html);
             cookingTime.getElement().setProperty("innerHTML", html2);
         });
 
         add(askRecipe);
+        add(foodImage);
         add(cookingTime);
         add(recipieDiv);
     }

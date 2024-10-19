@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="datadoghq.okhttp3.okhttp" type="repository">
+    <properties maven-id="com.datadoghq.okhttp3:okhttp:3.12.15" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/datadoghq/okhttp3/okhttp/3.12.15/okhttp-3.12.15.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/squareup/okio/okio/1.15.0/okio-1.15.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

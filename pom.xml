@@ -40,6 +40,16 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.commonmark</groupId>
+                <artifactId>commonmark</artifactId>
+                <version>0.17.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.cdimascio</groupId>
+                <artifactId>java-dotenv</artifactId>
+                <version>3.0.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

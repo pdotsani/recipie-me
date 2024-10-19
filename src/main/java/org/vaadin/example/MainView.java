@@ -3,6 +3,7 @@ package org.vaadin.example;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
@@ -72,8 +73,8 @@ public class MainView extends AppLayout {
 @Route(value = "recipe", layout = MainView.class)
 @PageTitle("Recipe")
 class RecipeView extends VerticalLayout {
-    private OpenAIConversation conversation;
-    private OpenAIImageGen imageGen;
+    private final OpenAIConversation conversation;
+    private final OpenAIImageGen imageGen;
     private String recipe = "";
     private String data = "";
     private String time = "";
@@ -84,6 +85,7 @@ class RecipeView extends VerticalLayout {
         imageGen = new OpenAIImageGen();
         add(new H1("Search by Recipe"));
         TextField askRecipe = new TextField();
+        Div topDiv = new Div();
         Div recipieDiv = new Div();
         Div cookingTime = new Div();
         Image foodImage = new Image();
@@ -93,6 +95,11 @@ class RecipeView extends VerticalLayout {
         foodImage.setWidth("25%");
         foodImage.setHeight("25%");
         cookingTime.setWidth("75%");
+        topDiv.setWidth("75%");
+        topDiv.getStyle().set("display", "flex");
+        topDiv.getStyle().set("flexDirection", "row");
+        topDiv.add(foodImage);
+        topDiv.add(cookingTime);
         recipieDiv.getStyle().set("min-height", "100px");
         recipieDiv.setWidth("75%");
         recipieDiv.getStyle().set("min-height", "100px");
@@ -102,8 +109,8 @@ class RecipeView extends VerticalLayout {
 
         askRecipe.addKeyPressListener(Key.ENTER, event -> {
             recipe = askRecipe.getValue();
-            data = conversation.askQuestion("Can you show me a recipe for ", recipe + ". Prefer a straightforward response");
-            time = conversation.askQuestion(recipe, "Can you show me prep time, cooking time, and total cooking time for? Prefer straightforward response.");
+            data = conversation.askQuestion("Can you show me a recipe for ", recipe + ". Prefer just the information");
+            time = conversation.askQuestion(recipe, "Can you show me prep time, cooking time, and total cooking time for? Prefer just the information.");
 
             Node documment = parser.parse(data);
             String html = renderer.render(documment);
@@ -118,8 +125,7 @@ class RecipeView extends VerticalLayout {
         });
 
         add(askRecipe);
-        add(foodImage);
-        add(cookingTime);
+        add(topDiv);
         add(recipieDiv);
     }
 }
@@ -127,8 +133,8 @@ class RecipeView extends VerticalLayout {
 @Route(value = "ingredients", layout = MainView.class)
 @PageTitle("Ingredients")
 class IngredientsView extends VerticalLayout {
-    private OpenAIConversation conversation;
-    private OpenAIImageGen imageGen;
+    private final OpenAIConversation conversation;
+    private final OpenAIImageGen imageGen;
     private String ingridients = "";
     private String data = "";
     private String recipe = "";
@@ -142,6 +148,7 @@ class IngredientsView extends VerticalLayout {
         TextField askRecipe = new TextField();
         Div recipieDiv = new Div();
         Div cookingTime = new Div();
+        Div topDiv = new Div();
         Image foodImage = new Image();
 
         askRecipe.setPlaceholder("list some ingredients here");
@@ -150,6 +157,10 @@ class IngredientsView extends VerticalLayout {
         cookingTime.setWidth("75%");
         askRecipe.setWidth("75%");
         recipieDiv.setWidth("75%");
+        topDiv.getStyle().set("display", "flex");
+        topDiv.getStyle().set("flexDirection", "row");
+        topDiv.add(foodImage);
+        topDiv.add(cookingTime);
         recipieDiv.getStyle().set("min-height", "100px");
 
         Parser parser = Parser.builder().build();
@@ -158,9 +169,9 @@ class IngredientsView extends VerticalLayout {
         askRecipe.addKeyPressListener(Key.ENTER, event -> {
             ingridients = askRecipe.getValue();
 
-            recipe = conversation.askQuestion("Can you tell me the name of a recipie with these ingredients ", ingridients);
-            data = conversation.askQuestion("Can you tell me the recipe of this dish  ", recipe);
-            time = conversation.askQuestion(recipe, "Can you show me prep time, cooking time, and total cooking time for? Prefer straightforward response.");
+            recipe = conversation.askQuestion("Can you tell me the name of a recipe with these ingredients ", ingridients);
+            data = conversation.askQuestion("Can you tell me the recipe for  ", recipe + ". Prefer just the information.");
+            time = conversation.askQuestion("Can you show me prep time, cooking time, and total cooking time for ", recipe + "Prefer just the information.");
 
             Node document = parser.parse(data);
             String html = renderer.render(document);
@@ -175,8 +186,7 @@ class IngredientsView extends VerticalLayout {
         });
 
         add(askRecipe);
-        add(foodImage);
-        add(cookingTime);
+        add(topDiv);
         add(recipieDiv);
     }
 }
@@ -186,6 +196,6 @@ class IngredientsView extends VerticalLayout {
 class AboutView extends VerticalLayout {
     public AboutView() {
         add(new H1("About"));
-        // Add your about view content here
+        add(new Anchor("https://github.com/pdotsani/recipe-me", "https://github.com/pdotsani/recipe-me"));
     }
 }

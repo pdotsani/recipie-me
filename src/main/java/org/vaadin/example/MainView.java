@@ -70,14 +70,41 @@ public class MainView extends AppLayout {
     }
 }
 
-@Route(value = "recipe", layout = MainView.class)
-@PageTitle("Recipe")
-class RecipeView extends VerticalLayout {
-    private final OpenAIConversation conversation;
-    private final OpenAIImageGen imageGen;
+class AppView extends VerticalLayout {
     private String recipe = "";
     private String data = "";
     private String time = "";
+
+    public void setRecipe(String recipe) {
+        this.recipe = recipe;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getRecipe() {
+        return recipe;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public String getTime() {
+        return time;
+    }
+}
+
+@Route(value = "recipe", layout = MainView.class)
+@PageTitle("Recipe")
+class RecipeView extends AppView {
+    private final OpenAIConversation conversation;
+    private final OpenAIImageGen imageGen;
 
     public RecipeView() {
         String OPENAIKEY = (EnvUtils.get("OPEN_AI_KEY") != null) ? EnvUtils.get("OPEN_AI_KEY") : "demo";
@@ -108,9 +135,11 @@ class RecipeView extends VerticalLayout {
         HtmlRenderer renderer = HtmlRenderer.builder().build();
 
         askRecipe.addKeyPressListener(Key.ENTER, event -> {
-            recipe = askRecipe.getValue();
-            data = conversation.askQuestion("Can you show me a recipe for ", recipe + ". Prefer just the information");
-            time = conversation.askQuestion(recipe, "Can you show me prep time, cooking time, and total cooking time for? Prefer just the information.");
+            this.setRecipe(askRecipe.getValue());
+            String data = conversation.askQuestion("Can you show me a recipe for ", this.getRecipe() + ". Prefer just the information");
+            this.setData(data);
+            String time = conversation.askQuestion(this.getRecipe(), "Can you show me prep time, cooking time, and total cooking time for? Prefer just the information.");
+            this.setTime(time);
 
             Node documment = parser.parse(data);
             String html = renderer.render(documment);
@@ -118,7 +147,7 @@ class RecipeView extends VerticalLayout {
             Node doc = parser.parse(time);
             String html2 = renderer.render(doc);
 
-            foodImage.setSrc(imageGen.generate(recipe));
+            foodImage.setSrc(imageGen.generate(this.getRecipe()));
 
             recipieDiv.getElement().setProperty("innerHTML", html);
             cookingTime.getElement().setProperty("innerHTML", html2);
@@ -132,13 +161,10 @@ class RecipeView extends VerticalLayout {
 
 @Route(value = "ingredients", layout = MainView.class)
 @PageTitle("Ingredients")
-class IngredientsView extends VerticalLayout {
+class IngredientsView extends AppView {
     private final OpenAIConversation conversation;
     private final OpenAIImageGen imageGen;
     private String ingridients = "";
-    private String data = "";
-    private String recipe = "";
-    private String time = "";
 
     public IngredientsView() {
         String OPENAIKEY = (EnvUtils.get("OPEN_AI_KEY") != null) ? EnvUtils.get("OPEN_AI_KEY") : "demo";
@@ -169,9 +195,12 @@ class IngredientsView extends VerticalLayout {
         askRecipe.addKeyPressListener(Key.ENTER, event -> {
             ingridients = askRecipe.getValue();
 
-            recipe = conversation.askQuestion("Can you tell me the name of a recipe with these ingredients ", ingridients);
-            data = conversation.askQuestion("Can you tell me the recipe for  ", recipe + ". Prefer just the information.");
-            time = conversation.askQuestion("Can you show me prep time, cooking time, and total cooking time for ", recipe + "Prefer just the information.");
+            String recipe = conversation.askQuestion("Can you tell me the name of a recipe with these ingredients ", ingridients);
+            this.setRecipe(recipe);
+            String data = conversation.askQuestion(this.getRecipe(),  "Can you tell me the recipe for this? Prefer just the information.");
+            this.setData(data);
+            String time = conversation.askQuestion(this.getRecipe(),  "Can you show me prep time, cooking time, and total cooking time?Prefer just the information.");
+            this.setTime(time);
 
             Node document = parser.parse(data);
             String html = renderer.render(document);

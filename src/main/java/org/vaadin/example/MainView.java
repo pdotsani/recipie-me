@@ -26,7 +26,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
  * To implement a Vaadin view just extend any Vaadin component and use @Route
  * annotation to announce it in a URL as a Spring managed bean.
  * <p>
- * A new instance of this class is created for every new user and every browser
+ * A new instance of super class is created for every new user and every browser
  * tab/window.
  * <p>
  * The main view contains a text field for getting the user name and a button
@@ -43,7 +43,7 @@ public class MainView extends AppLayout {
     }
 
     private void createHeader() {
-        H1 logo = new H1("My Recipe App");
+        H1 logo = new H1("Recipe Me");
         logo.addClassNames("text-l", "m-m");
 
         DrawerToggle toggle = new DrawerToggle();
@@ -71,9 +71,53 @@ public class MainView extends AppLayout {
 }
 
 class AppView extends VerticalLayout {
+    private String OPENAIKEY = (EnvUtils.get("OPEN_AI_KEY") != null) ? EnvUtils.get("OPEN_AI_KEY") : "demo";
+    private OpenAIConversation conversation = new OpenAIConversation(OPENAIKEY, "gpt-4o-mini");
+    private OpenAIImageGen imageGen = new OpenAIImageGen();
     private String recipe = "";
     private String data = "";
     private String time = "";
+    private Div topDiv = new Div();
+    private Div recipieDiv = new Div();
+    private Div cookingTime = new Div();
+    private Image foodImage = new Image();
+
+    public Div getTopDiv() {
+        return this.topDiv;
+    }
+
+    public Div getRecipieDiv() {
+        return this.recipieDiv;
+    }
+
+    public Div getCookingTime() {
+        return this.cookingTime;
+    }
+
+    public Image getFoodImage() {
+        return this.foodImage;
+    }
+
+    public void setLayout() {
+        this.foodImage.setWidth("25%");
+        this.foodImage.setHeight("25%");
+        this.cookingTime.setWidth("75%");
+        this.topDiv.setWidth("75%");
+        this.topDiv.getStyle().set("display", "flex");
+        this.topDiv.getStyle().set("flexDirection", "row");
+        this.topDiv.add(foodImage);
+        this.topDiv.add(cookingTime);
+        this.recipieDiv.setWidth("75%");
+        this.recipieDiv.getStyle().set("min-height", "100px");
+    }
+
+    public OpenAIConversation getConversation() {
+        return this.conversation;
+    }
+
+    public OpenAIImageGen getImageGen() {
+        return this.imageGen;
+    }
 
     public void setRecipe(String recipe) {
         this.recipe = recipe;
@@ -88,58 +132,38 @@ class AppView extends VerticalLayout {
     }
 
     public String getRecipe() {
-        return recipe;
+        return this.recipe;
     }
 
     public String getData() {
-        return data;
+        return this.data;
     }
 
     public String getTime() {
-        return time;
+        return this.time;
     }
 }
 
 @Route(value = "recipe", layout = MainView.class)
 @PageTitle("Recipe")
 class RecipeView extends AppView {
-    private final OpenAIConversation conversation;
-    private final OpenAIImageGen imageGen;
-
     public RecipeView() {
-        String OPENAIKEY = (EnvUtils.get("OPEN_AI_KEY") != null) ? EnvUtils.get("OPEN_AI_KEY") : "demo";
-        conversation = new OpenAIConversation(OPENAIKEY, "gpt-4o-mini");
-        imageGen = new OpenAIImageGen();
         add(new H1("Search by Recipe"));
         TextField askRecipe = new TextField();
-        Div topDiv = new Div();
-        Div recipieDiv = new Div();
-        Div cookingTime = new Div();
-        Image foodImage = new Image();
 
         askRecipe.setPlaceholder("enter a recipe here");
         askRecipe.setWidth("75%");
-        foodImage.setWidth("25%");
-        foodImage.setHeight("25%");
-        cookingTime.setWidth("75%");
-        topDiv.setWidth("75%");
-        topDiv.getStyle().set("display", "flex");
-        topDiv.getStyle().set("flexDirection", "row");
-        topDiv.add(foodImage);
-        topDiv.add(cookingTime);
-        recipieDiv.getStyle().set("min-height", "100px");
-        recipieDiv.setWidth("75%");
-        recipieDiv.getStyle().set("min-height", "100px");
+        super.setLayout();
 
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder().build();
 
         askRecipe.addKeyPressListener(Key.ENTER, event -> {
-            this.setRecipe(askRecipe.getValue());
-            String data = conversation.askQuestion("Can you show me a recipe for ", this.getRecipe() + ". Prefer just the information");
-            this.setData(data);
-            String time = conversation.askQuestion(this.getRecipe(), "Can you show me prep time, cooking time, and total cooking time for? Prefer just the information.");
-            this.setTime(time);
+            super.setRecipe(askRecipe.getValue());
+            String data = super.getConversation().askQuestion("Can you show me a recipe for ", super.getRecipe() + ". Prefer just the information");
+            super.setData(data);
+            String time = super.getConversation().askQuestion(super.getRecipe(), "Can you show me prep time, cooking time, and total cooking time for? Prefer just the information.");
+            super.setTime(time);
 
             Node documment = parser.parse(data);
             String html = renderer.render(documment);
@@ -147,60 +171,42 @@ class RecipeView extends AppView {
             Node doc = parser.parse(time);
             String html2 = renderer.render(doc);
 
-            foodImage.setSrc(imageGen.generate(this.getRecipe()));
+            super.getFoodImage().setSrc(super.getImageGen().generate(super.getRecipe()));
 
-            recipieDiv.getElement().setProperty("innerHTML", html);
-            cookingTime.getElement().setProperty("innerHTML", html2);
+            super.getRecipieDiv().getElement().setProperty("innerHTML", html);
+            super.getCookingTime().getElement().setProperty("innerHTML", html2);
         });
 
         add(askRecipe);
-        add(topDiv);
-        add(recipieDiv);
+        add(super.getTopDiv());
+        add(super.getRecipieDiv());
     }
 }
 
 @Route(value = "ingredients", layout = MainView.class)
 @PageTitle("Ingredients")
 class IngredientsView extends AppView {
-    private final OpenAIConversation conversation;
-    private final OpenAIImageGen imageGen;
-    private String ingridients = "";
-
     public IngredientsView() {
-        String OPENAIKEY = (EnvUtils.get("OPEN_AI_KEY") != null) ? EnvUtils.get("OPEN_AI_KEY") : "demo";
         add(new H1("Search by Ingredients"));
-        conversation = new OpenAIConversation(OPENAIKEY, "gpt-4o-mini");
-        imageGen = new OpenAIImageGen();
         TextField askRecipe = new TextField();
-        Div recipieDiv = new Div();
-        Div cookingTime = new Div();
-        Div topDiv = new Div();
-        Image foodImage = new Image();
 
         askRecipe.setPlaceholder("list some ingredients here");
-        foodImage.setWidth("25%");
-        foodImage.setHeight("25%");
-        cookingTime.setWidth("75%");
         askRecipe.setWidth("75%");
-        recipieDiv.setWidth("75%");
-        topDiv.getStyle().set("display", "flex");
-        topDiv.getStyle().set("flexDirection", "row");
-        topDiv.add(foodImage);
-        topDiv.add(cookingTime);
-        recipieDiv.getStyle().set("min-height", "100px");
+        super.setLayout();
 
         Parser parser = Parser.builder().build();
         HtmlRenderer renderer = HtmlRenderer.builder().build();
 
         askRecipe.addKeyPressListener(Key.ENTER, event -> {
+            String ingridients = "";
             ingridients = askRecipe.getValue();
 
-            String recipe = conversation.askQuestion("Can you tell me the name of a recipe with these ingredients ", ingridients);
-            this.setRecipe(recipe);
-            String data = conversation.askQuestion(this.getRecipe(),  "Can you tell me the recipe for this? Prefer just the information.");
-            this.setData(data);
-            String time = conversation.askQuestion(this.getRecipe(),  "Can you show me prep time, cooking time, and total cooking time?Prefer just the information.");
-            this.setTime(time);
+            String recipe = super.getConversation().askQuestion("Can you tell me the name of a recipe with these ingredients ", ingridients);
+            super.setRecipe(recipe);
+            String data = super.getConversation().askQuestion(super.getRecipe(),  "Can you tell me the recipe for super? Prefer just the information.");
+            super.setData(data);
+            String time = super.getConversation().askQuestion(super.getRecipe(),  "Can you show me prep time, cooking time, and total cooking time?Prefer just the information.");
+            super.setTime(time);
 
             Node document = parser.parse(data);
             String html = renderer.render(document);
@@ -208,15 +214,15 @@ class IngredientsView extends AppView {
             Node doc = parser.parse(time);
             String html2 = renderer.render(doc);
 
-            foodImage.setSrc(imageGen.generate(recipe));
+            super.getFoodImage().setSrc(super.getImageGen().generate(recipe));
 
-            recipieDiv.getElement().setProperty("innerHTML", html);
-            cookingTime.getElement().setProperty("innerHTML", html2);
+            super.getRecipieDiv().getElement().setProperty("innerHTML", html);
+            super.getCookingTime().getElement().setProperty("innerHTML", html2);
         });
 
         add(askRecipe);
-        add(topDiv);
-        add(recipieDiv);
+        add(super.getTopDiv());
+        add(super.getRecipieDiv());
     }
 }
 

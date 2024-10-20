@@ -43,8 +43,6 @@ public class OpenAIImageGen {
             System.out.println("Response Code: " + response.code());
             String responseJsonString = response.body().string();
 
-            System.out.println(responseJsonString);
-
             Type type = new TypeToken<Map<String, Object>>() {}.getType();
             Map<String, Object> responseMap = gson.fromJson(responseJsonString, type);
 

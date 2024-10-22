@@ -17,7 +17,11 @@ OPEN_AI_KEY=<key-here>
 I first started with several prompts to gather the data for each type
 of recipe fetching. For recipe name, the prompts were direct. For ingredients,
 I had to chain the prompts to gather a result from a result. For images, I tried
-a different approach to the API and made an https request.
+a different approach to the API and made an https request.  
+  
+- To parse the markdown, I used the 3rd party library commonmark.  
+- To make the http request, I used okhttp.
+- JSON handling was mostly done using gson.
 
 ## Test Plan
 I tested various scenarios and determined an ideal wait time for the api.
